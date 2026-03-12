@@ -3,7 +3,7 @@ import { Mail } from "lucide-react";
 import { Avatar, AvatarImage } from "./ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
 
-function MyProfile() {
+export default function MyProfile() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -53,5 +53,3 @@ function MyProfile() {
     </DropdownMenu>
   )
 }
-
-export default MyProfile

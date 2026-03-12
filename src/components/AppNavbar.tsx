@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 import MyProfile from "./MyProfile"
 
 
-function AppNavbar() {
+export default function AppNavbar() {
   const { setTheme } = useTheme()
 
   return(
@@ -40,5 +40,3 @@ function AppNavbar() {
     </nav>
   )
 }
-
-export default AppNavbar

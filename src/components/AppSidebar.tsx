@@ -1,63 +1,32 @@
-import {
-  Home,
-  Inbox,
-  Calendar,
-  Search,
-  Settings,
-} from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
 
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
+type SidebarProps = {
+  chapters: string[]
+}
 
-const items = [
-  {
-    title: "Home",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-];
+export default function AppSidebar({ chapters }: SidebarProps) {
+  const { chapterId } = useParams();
 
-function AppSidebar() {
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Application</SidebarGroupLabel>
-              {items.map(item => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon/>
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-          </SidebarGroup>
-        </SidebarContent>
-      </SidebarHeader>
+    <Sidebar collapsible="offcanvas">
+      <SidebarContent>
+        <SidebarGroup>
+          {chapters.map((filePath) => {
+            const fileName = filePath.replace(/^.*[\\/]/, '').replace(/\.[^/.]+$/, "");
+
+            return (
+              <SidebarMenuItem key={fileName}>
+                <SidebarMenuButton asChild isActive={chapterId == fileName}>
+                  <Link to={`/chapters/${fileName}`}>
+                    <span>{fileName}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
+        </SidebarGroup>
+      </SidebarContent>
     </Sidebar>
   )
 }
-
-export default AppSidebar
