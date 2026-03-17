@@ -26,7 +26,7 @@ export default function AppSidebar() {
         link: `${fileName}#${subChapter.value.toLowerCase().replaceAll(" ", "-")}`
       }
     })
-    console.log(subChapters)
+
     return {
       chapterId: fileName,
       title: mdxModule.tableOfContents[0].value,
@@ -41,7 +41,7 @@ export default function AppSidebar() {
           <SidebarMenu>
             {menuItems.map(chapter  => {
               return (
-                <SidebarMenuItem>            
+                <SidebarMenuItem key={chapter.chapterId}>        
                   <Collapsible>
                       <CollapsibleTrigger asChild className='flex items-center justify-between'>
                         <SidebarMenuButton isActive={chapterId === chapter.chapterId}>
@@ -56,9 +56,9 @@ export default function AppSidebar() {
                         <SidebarMenuSub>
                           {chapter.subChapters?.map(subChapter => {
                             return (
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton>
-                                  <Link to={`chapters/${subChapter.link}`}>
+                              <SidebarMenuSubItem key={subChapter.link}>
+                                <SidebarMenuSubButton asChild>
+                                  <Link to={`/chapters/${subChapter.link}`}>
                                     <span>{subChapter.title}</span>
                                   </Link>
                                 </SidebarMenuSubButton>
