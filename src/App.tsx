@@ -4,13 +4,11 @@ import AppNavbar from './components/AppNavbar'
 import AppSidebar from './components/AppSidebar'
 import { SidebarProvider } from './components/ui/sidebar'
 
-const chapters = import.meta.glob("/src/chapters/*.mdx")
-
 export default function App() {
   return (
     <div className='flex'>
       <SidebarProvider>
-        <AppSidebar chapters={Object.keys(chapters)}/>
+        <AppSidebar />
         <main className='w-full'>
           <AppNavbar />
           <div className='flex justify-center p-8'>
