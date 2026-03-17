@@ -16,7 +16,7 @@ const chaptersData = import.meta.glob<MdxModule>('../chapters/*.mdx', { eager: t
 
 export default function AppSidebar() {
   const { chapterId } = useParams();
-
+  
   // Turn the glob object into a usable array
   const menuItems = Object.entries(chaptersData).map(([path, mdxModule]) => {
     const fileName = path.replace(/^.*[\\/]/, '').replace(/\.[^/.]+$/, "");
@@ -41,34 +41,35 @@ export default function AppSidebar() {
           <SidebarMenu>
             {menuItems.map(chapter  => {
               return (
-                <SidebarMenuItem key={chapter.chapterId}>        
-                  <Collapsible>
-                      <CollapsibleTrigger asChild className='flex items-center justify-between'>
-                        <SidebarMenuButton isActive={chapterId === chapter.chapterId}>
-                          <Link to={`/chapters/${chapter.chapterId}`}>
-                            <span>{chapter.title}</span>
-                          </Link>
-                          <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {chapter.subChapters?.map(subChapter => {
-                            return (
-                              <SidebarMenuSubItem key={subChapter.link}>
-                                <SidebarMenuSubButton asChild>
-                                  <Link to={`/chapters/${subChapter.link}`}>
-                                    <span>{subChapter.title}</span>
-                                  </Link>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            )
-                          })}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                  </Collapsible>
-                </SidebarMenuItem>
+                <Collapsible key={chapter.chapterId} className="group/collapsible">
+                  <SidebarMenuItem className='flex'>
+                    <SidebarMenuButton isActive={chapterId === chapter.chapterId}>
+                      <Link to={`/chapters/${chapter.chapterId}`} className='flex-auto'>
+                        <span>{chapter.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className='w-fit'>
+                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                  </SidebarMenuItem>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                        {chapter.subChapters?.map(subChapter => {
+                          return (
+                            <SidebarMenuSubItem key={subChapter.link}>
+                              <SidebarMenuSubButton asChild>
+                                <Link to={`/chapters/${subChapter.link}`}>
+                                  <span>{subChapter.title}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                </Collapsible>
               )
             })}
           </SidebarMenu>
