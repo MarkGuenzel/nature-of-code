@@ -9,6 +9,7 @@ import rehypeSlug from 'rehype-slug';
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/nature-of-code",
   plugins: [
     react(), 
     tailwindcss(),

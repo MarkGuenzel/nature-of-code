@@ -44,7 +44,7 @@ export default function AppSidebar() {
                 <Collapsible key={chapter.chapterId} className="group/collapsible">
                   <SidebarMenuItem className='flex'>
                     <SidebarMenuButton isActive={chapterId === chapter.chapterId}>
-                      <Link to={`/chapters/${chapter.chapterId}`} className='flex-auto'>
+                      <Link to={`/nature-of-code/chapters/${chapter.chapterId}`} className='flex-auto'>
                         <span>{chapter.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -60,7 +60,7 @@ export default function AppSidebar() {
                           return (
                             <SidebarMenuSubItem key={subChapter.link}>
                               <SidebarMenuSubButton asChild>
-                                <Link to={`/chapters/${subChapter.link}`}>
+                                <Link to={`/nature-of-code/chapters/${subChapter.link}`}>
                                   <span>{subChapter.title}</span>
                                 </Link>
                               </SidebarMenuSubButton>

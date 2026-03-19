@@ -8,13 +8,13 @@ import App from './App.tsx';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/nature-of-code",
     element: <App />,
     errorElement: <span> 404 Not Found </span>,
     children: [
       {
         index: true,
-        element: <Navigate to="/chapters/0-introduction" replace />
+        element: <Navigate to="/nature-of-code/chapters/0-introduction" replace />
       },
       {
         path: "chapters/:chapterId",
