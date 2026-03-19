@@ -1,20 +1,20 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { createHashRouter, Navigate, RouterProvider } from 'react-router-dom';
 import ChapterViewer from './components/ChapterViewer.tsx';
 import { ThemeProvider } from './components/ui/theme-provider'
 import App from './App.tsx';
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
-    path: "/nature-of-code",
+    path: "/",
     element: <App />,
     errorElement: <span> 404 Not Found </span>,
     children: [
       {
         index: true,
-        element: <Navigate to="/nature-of-code/chapters/0-introduction" replace />
+        element: <Navigate to="/chapters/0-introduction" replace />
       },
       {
         path: "chapters/:chapterId",
