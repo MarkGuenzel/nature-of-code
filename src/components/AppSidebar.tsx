@@ -1,51 +1,43 @@
-import React from 'react'
-import type { MDXProps } from 'mdx/types'
-import type { Toc } from '@stefanprobst/rehype-extract-toc'
-
 import { Link, useParams } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "./ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { ChevronRight } from 'lucide-react';
+import type { MdxModule, ChapterMetaData } from '@/types/mdx';
 
-type MdxModule = {
-  default: (props: MDXProps) => React.JSX.Element;
-  tableOfContents: Toc;
-};
+const chapterFiles = import.meta.glob<MdxModule>('../chapters/*.mdx', { eager: true });
 
-const chaptersData = import.meta.glob<MdxModule>('../chapters/*.mdx', { eager: true });
+const chapterMetaData: ChapterMetaData[] = Object.entries(chapterFiles).map(([path, mdxModule]) => {
+  const fileName = path.replace(/^.*[\\/]/, '').replace(/\.[^/.]+$/, "");
+  const [root] = mdxModule.tableOfContents;
+
+  const subChapters = root.children?.map((child) => ({
+    title: child.value,
+    link: `${fileName}#${child.value.toLowerCase().replaceAll(" ", "-")}`
+  })) ?? [];
+
+  return {
+    chapterId: fileName,
+    title: root.value,
+    subChapters: subChapters
+  };
+});
+
 
 export default function AppSidebar() {
   const { chapterId } = useParams();
-  
-  // Turn the glob object into a usable array
-  const menuItems = Object.entries(chaptersData).map(([path, mdxModule]) => {
-    const fileName = path.replace(/^.*[\\/]/, '').replace(/\.[^/.]+$/, "");
-    const subChapters = mdxModule.tableOfContents[0].children?.map(subChapter => {
-      return {
-        title: subChapter.value,
-        link: `${fileName}#${subChapter.value.toLowerCase().replaceAll(" ", "-")}`
-      }
-    })
-
-    return {
-      chapterId: fileName,
-      title: mdxModule.tableOfContents[0].value,
-      subChapters: subChapters
-    };
-  });
 
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {menuItems.map(chapter  => {
+            {chapterMetaData.map(chapter  => {
               return (
                 <Collapsible key={chapter.chapterId} className="group/collapsible">
                   <SidebarMenuItem className='flex'>
                     <SidebarMenuButton isActive={chapterId === chapter.chapterId}>
                       <Link to={`/chapters/${chapter.chapterId}`} className='flex-auto'>
-                        <span>{chapter.title}</span>
+                        {chapter.title}
                       </Link>
                     </SidebarMenuButton>
                     <CollapsibleTrigger asChild>
@@ -56,12 +48,12 @@ export default function AppSidebar() {
                   </SidebarMenuItem>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                        {chapter.subChapters?.map(subChapter => {
+                        {chapter.subChapters.map(subChapter => {
                           return (
                             <SidebarMenuSubItem key={subChapter.link}>
                               <SidebarMenuSubButton asChild>
                                 <Link to={`/chapters/${subChapter.link}`}>
-                                  <span>{subChapter.title}</span>
+                                  {subChapter.title}
                                 </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
