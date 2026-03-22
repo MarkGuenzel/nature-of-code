@@ -11,7 +11,7 @@ export default function AppNavbar() {
   const { setTheme } = useTheme()
 
   return(
-    <nav className="p4 flex items-center justify-between pt-2 pr-5">
+    <nav className="sticky top-0 z-50 bg-background flex items-center justify-between pt-2 pr-5">
       <SidebarTrigger />
 
       <div className="flex items-center gap-4">
