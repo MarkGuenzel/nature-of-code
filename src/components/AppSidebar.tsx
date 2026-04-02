@@ -34,7 +34,7 @@ export default function AppSidebar() {
             {chapterMetaData.map(chapter  => {
               return (
                 <Collapsible key={chapter.chapterId} className="group/collapsible">
-                  <SidebarMenuItem className='flex'>
+                  <SidebarMenuItem className='flex max-w-none'>
                     <SidebarMenuButton isActive={chapterId === chapter.chapterId}>
                       <Link to={`/chapters/${chapter.chapterId}`} className='flex-auto'>
                         {chapter.title}

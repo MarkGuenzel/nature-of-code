@@ -5,6 +5,7 @@ import { createHashRouter, Navigate, RouterProvider } from 'react-router-dom';
 import ChapterViewer from './components/ChapterViewer.tsx';
 import { ThemeProvider } from './components/ui/theme-provider'
 import App from './App.tsx';
+import 'katex/dist/katex.min.css'
 
 const router = createHashRouter([
   {

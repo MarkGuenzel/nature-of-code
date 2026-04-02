@@ -12,8 +12,11 @@ export default function ChapterViewer() {
   const Content = module?.default;
 
   return (
-    <article className="prose prose-slate lg:prose-xl dark:prose-invert text-left">
-      {!Content ? <div>Chapter not found</div> : <Content />}
-    </article>
+    <div className='max-w-4xl mx-auto px-4'>
+      <article className="prose prose-slate lg:prose-xl dark:prose-invert text-left max-w-none">
+        {!Content ? <div>Chapter not found</div> : <Content />}
+      </article>
+    </div>
+
   )
 }

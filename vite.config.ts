@@ -6,6 +6,8 @@ import react from '@vitejs/plugin-react'
 import remarkExtractToc from '@stefanprobst/remark-extract-toc'
 import remarkMdxExportToc from '@stefanprobst/remark-extract-toc/mdx'
 import rehypeSlug from 'rehype-slug';
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,9 +18,13 @@ export default defineConfig({
     mdx({
       remarkPlugins: [
         remarkExtractToc,
-        remarkMdxExportToc
+        remarkMdxExportToc,
+        remarkMath
       ],
-      rehypePlugins: [rehypeSlug],
+      rehypePlugins: [
+        rehypeSlug,
+        rehypeKatex
+      ],
     })
   ],
   resolve: {

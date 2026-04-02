@@ -1,0 +1,228 @@
+import SketchPlayer from '/src/components/SketchPlayer.tsx'
+import { sketchValueNoise, sketchValueNoiseSmooth, sketchValueNoise2D } from "./sketches/valueNoise.ts"
+import { sketchPerlinNoise } from "./sketches/perlinNoise.ts"
+
+import valueNoiseImg from "./images/value-noise.png"
+import perlinNoiseImg from "./images/perlin-noise.png"
+
+# Chapter 1: Randomness
+
+Simulations built on perfectly deterministic rules tend to feel lifeless. Real physical systems — wind, fire, biological motion — are shaped by processes too complex to model exactly. Randomness is the practical stand-in: a tool for introducing the variation and unpredictability that makes simulated behavior feel plausible and alive. Without it, a particle always traces the same path, a tree always grows the same shape, and the illusion collapses.
+
+## Pseudo-Random Numbers
+Computers are deterministic machines. Given the same instructions and inputs, they always produce the same output — which means true randomness is fundamentally out of reach. What programming languages provide instead are pseudo-random number generators (PRNGs): algorithms that produce sequences of numbers that look random and pass statistical tests for randomness, but are entirely determined by an initial value called a seed. JavaScript's `Math.random()` works exactly this way under the hood.
+
+This determinism is, surprisingly, often useful. Fixing the seed lets you reproduce the exact same sequence of "random" values — handy for debugging, or for regenerating the same procedural world twice. The trade-off is that the sequence eventually repeats, though in modern PRNGs the period before repetition is so astronomically large that it's never a practical concern.
+
+## Uniform vs. Non-Uniform Distributions
+The simplest form of randomness is a uniform distribution: every outcome in a range is equally likely. Call `Math.random()` a thousand times and the results spread evenly between 0 and 1. This is useful as a starting point, but it rarely reflects how nature actually behaves.
+In the real world, outcomes cluster. A falling object is more likely to land near the center of a target than at the edge. A creature is more likely to continue moving in its current direction than to reverse abruptly. Non-uniform distributions — where some outcomes are more probable than others — capture this tendency. Two common approaches are the normal [(Gaussian) distribution](https://en.wikipedia.org/wiki/Normal_distribution), which concentrates values around a mean with symmetrically tapering tails, and custom probability weightings, where you bias `Math.random()` explicitly toward desired outcomes. The result is motion and behavior that feels organic rather than mechanical.
+
+<div>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Standard_deviation_diagram_micro.svg/960px-Standard_deviation_diagram_micro.svg.png"/>
+  By <a href="//commons.wikimedia.org/wiki/User:Ainali" title="User:Ainali">Ainali</a> - <span class="int-own-work" lang="en">Own work</span>, <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=3141713">Link</a>
+</div>
+
+## Linear Congruential Generator
+A linear congruential generator [LCG](https://en.wikipedia.org/wiki/Linear_congruential_generatorgau) is one of the oldest and simplest PRNG algorithms. It produces a sequence of values using the recurrence relation:
+$$ 
+X_{n+1} = (aX_{n} + c) \mod {m}
+$$
+where $ X $ is the sequence of pseudo-random values, and \
+$ m $ - is the modulus\
+$ a $ - is the multiplier \
+$ c $ - is the increment \
+$ X_{0} $ - is the seed or start value
+
+The parameters $a$, $c$ and $m$ are chosen carefully to ensure the sequence has a long period and good statistical properties. Here's a JavaScript implementation:
+
+```js
+class LCG {
+    a = 1664525n;
+    m = 2n**32n;
+    c = 1013904223n;
+
+    constructor(seed) {
+        this.seed = BigInt(seed);
+    }
+
+    next() {
+        this.seed = (this.a * this.seed  + this.c) % this.m  
+        return Number(this.seed)
+    }
+  
+    range(min, max) {
+      let nextNumber = this.next()
+      let normalized = nextNumber / Number(this.m)
+      
+      return Math.floor((max - min)  * normalized + min)
+    }
+}
+
+generator = new LCG(67)
+console.log(generator.next())
+console.log(generator.next())
+console.log(generator.range(0, 100))
+console.log(generator.range(0, 100))
+```
+
+Output:
+```
+1125427398
+1527802221
+69
+14
+```
+LCGs are fast and have low memory overhead, which made them the standard choice in early software. Their weakness is that the low-order bits tend to cycle with short periods — making them unsuitable for cryptography, though perfectly adequate for simulations and procedural generation.
+
+## Value Noise
+Pure randomness — even non-uniform — has a fundamental limitation: it has no memory. Each value is independent of the last, so a sequence of random numbers produces jagged, incoherent results when used to drive continuous motion.
+Value noise addresses this by interpolating between random values sampled at fixed grid points. Instead of jumping erratically between independent values, the output transitions smoothly from one to the next.
+<img src={valueNoiseImg}/>
+
+```js
+class ValueNoise {
+    hash1D(x: number) {
+        let h = Math.imul(x, 0x9e3779b9);
+        h = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+        h = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+        return (h ^ (h >>> 16)) >>> 0;
+    }
+  
+    getValue(x: number) {
+        // Perform linear interpolation
+        const floorHash = this.hash1D(Math.floor(x));
+        const ceilHash = this.hash1D(Math.ceil(x));
+        const fraction = x - Math.floor(x);
+      
+        return floorHash + fraction * (ceilHash - floorHash)
+    }
+}
+```
+<SketchPlayer sketch={sketchValueNoise} />
+
+The interpolation can be improved by replacing the linear blend with a smoothstep function $3x^{2} - 2x^{3}$ which eases in and out at the endpoints, eliminating the visible kinks where grid cells meet:
+
+
+```js
+smoothstep(x: number) {
+    return x * x * (3 - 2 * x);
+}
+
+getValue(x: number) {
+    // Perform linear interpolation
+    const floorHash = this.hash1D(Math.floor(x));
+    const ceilHash = this.hash1D(Math.ceil(x));
+    const fraction = x - Math.floor(x);
+    const interpolatedHash = floorHash + this.smoothstep(fraction) * (ceilHash - floorHash);
+
+    // Normalize to get values between 0 and 1
+    return interpolatedHash / 0xFFFFFFFF; // hash1D returns a 32-bit integer
+}
+```
+<SketchPlayer sketch={sketchValueNoiseSmooth} />
+
+Value noise extends naturally to two dimensions by hashing the four corners of a grid cell and performing bilinear interpolation — first interpolating along the x-axis between the bottom corners, then between the top corners, then interpolating the two results along y.
+```js
+class ValueNoise2D {
+    hash2D(x, y) {
+        let h = Math.imul(x, 0x9e3779b9);
+        h ^= Math.imul(y, 0x85ebca6b);
+        h = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+        h = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+        return (h ^ (h >>> 16)) >>> 0;
+    }
+  
+    smoothstep(x) {
+        return x * x * (3 - 2 * x);
+    }
+  
+    interpolation(floor, ceil, fraction) {
+        return floor + this.smoothstep(fraction) * (ceil - floor);
+    }
+  
+    getValue(x, y) {
+        const xFloor = Math.floor(x);
+        const yFloor = Math.floor(y);
+        const xCeil = xFloor + 1;
+        const yCeil = yFloor + 1;
+      
+        const n00 = this.hash2D(xFloor, yFloor); // bottom-left
+        const n10 = this.hash2D(xCeil,  yFloor); // bottom-right
+        const n01 = this.hash2D(xFloor, yCeil);  // top-left
+        const n11 = this.hash2D(xCeil,  yCeil);  // top-right
+        
+        // Perform Bilinearinterpolation
+        const lerpBottom = this.interpolation(n00, n10, x - xFloor);
+        const lerpTop = this.interpolation(n01, n11, x - xFloor);
+        return this.interpolation(lerpBottom, lerpTop, y - yFloor) / 0xFFFFFFFF;
+    }
+}
+```
+<SketchPlayer sketch={sketchValueNoise2D} />
+
+## Perlin Noise
+Developed by Ken Perlin in the early 1980s for the film Tron, Perlin noise improves on value noise in an important way. Rather than assigning a random scalar to each grid point, it assigns a random gradient vector. The output at any point is computed from the dot products between those gradients and the direction vectors pointing from the grid corners to the query point, then blended together with smoothstep interpolation.
+
+This gradient-based approach produces smoother, more natural-looking results than value noise — particularly at large scales where value noise can exhibit a subtle blocky pattern.
+<img src={perlinNoiseImg}/>
+```js
+class PerlinNoise {   
+    smoothstep(x) {
+        return x * x * (3 - 2 * x);
+    }
+  
+    randomGradient(x, y) {
+        let h = Math.imul(x, 0x9e3779b9);
+        h ^= Math.imul(y, 0x85ebca6b);
+        h = Math.imul(h ^ (h >>> 16), 0x45d9f3b7);
+        h = Math.imul(h ^ (h >>> 16), 0x45d9f3b7);
+        h = (h ^ (h >>> 16)) >>> 0;
+
+        const angle = (h / 0xFFFFFFFF) * Math.PI * 2;
+        return [Math.cos(angle), Math.sin(angle)];
+    }
+  
+    dot(gradient, dx, dy) {
+        return gradient[0] * dx + gradient[1] * dy
+    }
+  
+    interpolation(floor, ceil, fraction) {
+        return floor + this.smoothstep(fraction) * (ceil - floor);
+    }
+  
+    getValue(x, y, scale = 0.9) {
+        // Apply scale to avoid dx, dy = 0
+        x *= scale;
+        y *= scale;
+      
+        const xFloor = Math.floor(x);
+        const yFloor = Math.floor(y);
+        const xCeil = xFloor + 1;
+        const yCeil = yFloor + 1;
+      
+        // Gradients
+        const g00 = this.randomGradient(xFloor, yFloor); // bottom-left
+        const g10 = this.randomGradient(xCeil,  yFloor); // bottom-right
+        const g01 = this.randomGradient(xFloor, yCeil);  // top-left
+        const g11 = this.randomGradient(xCeil,  yCeil);  // top-right
+      
+        // Direction Vectors
+        const dx = x - xFloor;
+        const dy = y - yFloor;
+      
+        // Calculate dot product between gradients and input position
+        const n00 = this.dot(g00, dx, dy);
+        const n10 = this.dot(g10, dx - 1, dy);
+        const n01 = this.dot(g01, dx, dy - 1);
+        const n11 = this.dot(g11, dx - 1, dy - 1);
+        
+        // Perform Bilinearinterpolation
+        const lerpBottom = this.interpolation(n00, n10, dx);
+        const lerpTop = this.interpolation(n01, n11, dx);
+        return this.interpolation(lerpBottom, lerpTop, dy);
+    }
+}
+```
+<SketchPlayer sketch={sketchPerlinNoise} />
+In practice, Perlin noise is used to control things like wind direction, terrain elevation, cloud density, and the path of an animated agent — anywhere you need variation that feels continuous and organic rather than erratic. The same concept extends to three and higher dimensions, adding time as an axis to animate the noise itself.
