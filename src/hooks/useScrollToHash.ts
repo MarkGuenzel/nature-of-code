@@ -12,13 +12,21 @@ export function useScrollToHash() {
     // Try immediately, then retry a few times to handle lazy-loaded content
     let attempts = 0;
     const maxAttempts = 10;
+    const scrollOffset = 45;
 
     const tryScroll = () => {
       const header = document.getElementById(subChapterId);
+      const headerPosition = header?.getBoundingClientRect().top ?? 0;
+      const offsetPosition = headerPosition + window.pageYOffset - scrollOffset;
+
       if (header) {
-        header.scrollIntoView({ behavior: 'smooth' });
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        })
         return;
       }
+
       if (++attempts < maxAttempts) {
         setTimeout(tryScroll, 100);
       }
