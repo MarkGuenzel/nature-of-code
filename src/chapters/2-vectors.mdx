@@ -1,0 +1,89 @@
+import SketchPlayer from '/src/components/SketchPlayer.tsx'
+
+import vectorOperationsImg from "./images/vector-operations.svg"
+import accelerationImg from "./images/position-velocity-acceleration.svg"
+
+#  Chapter 2: Vectors
+
+A vector is one of the most fundamental concepts in physics simulation. Before introducing the math, it helps to build the right intuition — and the best way to do that is through motion.
+Imagine tracking a ball moving across the screen. At any given moment, the ball has two properties: where it is, and where it's going. Its position is straightforward — a point in space, described by coordinates ($x,y$). But "where it's going" carries more information than a single number can express. It has both a *speed* and a *direction*. That combination is a **vector**.
+
+Formally, a Euclidean vector is a quantity defined by two properties: magnitude (how much) and direction (which way). This distinguishes vectors from scalars, which have magnitude alone. Temperature, mass, and time are scalars. Velocity, acceleration, and force are vectors.
+
+## Why Vectors Matter
+
+Without vectors, describing even simple motion becomes unwieldy. You might store a ball's horizontal speed as `vx` and its vertical speed as `vy` — two separate variables that you have to update, pass around, and reason about independently. As simulations grow more complex, this quickly becomes unmanageable.
+
+Vectors give you a clean abstraction. Instead of `vx` and `vy`, you have a single object that represents both at once. Vector math — addition, subtraction, scaling — then maps directly onto physical operations: applying a force, combining velocities, reflecting off a surface. The code mirrors the physics, which makes both easier to reason about.
+
+## Vector Math
+Most vector operations work component-wise — you apply the operation separately to each component and combine the results into a new vector.
+
+**Addition** combines two vectors. Geometrically, this is equivalent to placing one vector's tail at the other's tip and drawing the line from start to end. In simulation, it's how you apply displacement or combine forces:
+$$ 
+\vec{a} + \vec{b} = (a_{x} + b_{x} \ , \ a_{y} + b_{y}) 
+$$
+
+**Subtraction** finds the vector pointing from one point to another — useful whenever you need a direction between two things, like an object and a target:
+$$ 
+\vec{a} - \vec{b} = (a_{x} - b_{x} \ , \ a_{y} - b_{y}) 
+$$
+
+Multiplication by a scalar stretches or shrinks a vector without changing its direction. Multiplying by 2 doubles the magnitude; multiplying by 0.5 halves it; multiplying by -1 reverses the direction entirely:
+$$ 
+c \cdot \vec{a} = (c \cdot a_{x} \ , \ c \cdot a_{y}) 
+$$
+This operation is often called scaling, and it's how you apply things like friction (scaling velocity down each frame) or wind strength (scaling a force vector up).
+
+Division by a scalar is the same idea in reverse:
+$$ 
+\vec{a} / c = (a_{x} / c \ , a_{y} / c) 
+$$
+It's most commonly used when averaging forces or normalizing values.
+
+<img src={vectorOperationsImg} />
+
+## Magnitude
+The **magnitude** of a vector — written $| \vec{v} |$ — is its length. It answers the question: *how far is this, regardless of direction?* By Pythagoras' theorem:
+$$
+| \vec{v} | = \sqrt{v_x^2 + v_y^2}
+$$
+Magnitude turns a vector back into a scalar. It's useful whenever you need to know the speed of an object (as opposed to its velocity), or to check whether two objects are within a certain distance of each other.
+
+## Normalizing Vectors
+A **unit vector** is a vector with a magnitude of exactly 1. It encodes only direction, with all information about scale stripped away.
+
+To normalize a vector, you divide each of its components by its magnitude:
+$$
+\^v = \frac{ \vec{v} }{| \vec{v} |}
+$$
+
+The result $\^v$ (read "v hat") points in exactly the same direction as $\vec{v}$, but has length 1. This is one of the most common operations in simulation: whenever you want to apply a force *in a particular direction* but control the *strength* separately, you normalize the direction vector first, then scale it to the desired magnitude.
+
+For example, to make an object always move toward a target point at a fixed speed, you would compute the vector from the object to the target, normalize it to get a unit direction, then multiply by the desired speed.
+
+## Velocity
+**Velocity** is the rate of change of position with respect to time. In a frame-based animation, this translates to a beautifully simple rule:
+$$
+\vec{position_{new}} = \vec{position} + \vec{velocity}
+$$
+Every frame, you add the velocity vector to the position vector. That's it. If the ball is at (200,150) and has velocity (3,-1), next frame it will be at (203,149). The direction of the velocity vector determines which way the ball moves; the magnitude determines how fast.
+
+This is the foundation of all motion in this framework.
+
+## Acceleration
+If velocity is the rate of change of position, **acceleration** is the rate of change of velocity. The full update rule for motion is now two steps:
+$$
+\vec{velocity_{new} = \vec{velocity} + \vec{acceleration}}
+$$
+$$
+\vec{position_{new} = \vec{position} + \vec{velocity_{new}}}
+$$
+
+Every frame, acceleration modifies velocity, and velocity modifies position. This is Newton's second law expressed as code: a force applied to an object changes how it moves, not where it is directly.
+
+What makes this powerful is that acceleration can change over time. A constant acceleration produces uniformly speeding-up motion (like gravity). An acceleration that always points toward a fixed location produces orbiting behavior. An acceleration derived from the object's current velocity can simulate drag. The motion that emerges from these simple rules can be surprisingly rich.
+
+<img src={accelerationImg} />
+
+Each frame, the chain fires from left to right: acceleration feeds into velocity, velocity feeds into position. The object has no direct knowledge of the forces acting on it — it only ever knows its current velocity, which accumulates the effect of every force that has been applied. This separation is what makes the model so flexible: to change how an object moves, you only ever need to change what's feeding into acceleration.

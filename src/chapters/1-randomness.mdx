@@ -14,7 +14,7 @@ Computers are deterministic machines. Given the same instructions and inputs, th
 
 This determinism is, surprisingly, often useful. Fixing the seed lets you reproduce the exact same sequence of "random" values — handy for debugging, or for regenerating the same procedural world twice. The trade-off is that the sequence eventually repeats, though in modern PRNGs the period before repetition is so astronomically large that it's never a practical concern.
 
-## Uniform and Nonuniform Distributions
+## Distributions
 The simplest form of randomness is a uniform distribution: every outcome in a range is equally likely. Call `Math.random()` a thousand times and the results spread evenly between 0 and 1. This is useful as a starting point, but it rarely reflects how nature actually behaves.
 In the real world, outcomes cluster. A falling object is more likely to land near the center of a target than at the edge. A creature is more likely to continue moving in its current direction than to reverse abruptly. Non-uniform distributions — where some outcomes are more probable than others — capture this tendency. Two common approaches are the normal [(Gaussian) distribution](https://en.wikipedia.org/wiki/Normal_distribution), which concentrates values around a mean with symmetrically tapering tails, and custom probability weightings, where you bias `Math.random()` explicitly toward desired outcomes. The result is motion and behavior that feels organic rather than mechanical.
 
