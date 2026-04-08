@@ -19,7 +19,7 @@ The simplest form of randomness is a uniform distribution: every outcome in a ra
 In the real world, outcomes cluster. A falling object is more likely to land near the center of a target than at the edge. A creature is more likely to continue moving in its current direction than to reverse abruptly. Non-uniform distributions — where some outcomes are more probable than others — capture this tendency. Two common approaches are the normal [(Gaussian) distribution](https://en.wikipedia.org/wiki/Normal_distribution), which concentrates values around a mean with symmetrically tapering tails, and custom probability weightings, where you bias `Math.random()` explicitly toward desired outcomes. The result is motion and behavior that feels organic rather than mechanical.
 
 <div>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Standard_deviation_diagram_micro.svg/960px-Standard_deviation_diagram_micro.svg.png"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Standard_deviation_diagram_micro.svg/960px-Standard_deviation_diagram_micro.svg.png" width={"600px"}/>
   By <a href="//commons.wikimedia.org/wiki/User:Ainali" title="User:Ainali">Ainali</a> - <span class="int-own-work" lang="en">Own work</span>, <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=3141713">Link</a>
 </div>
 
@@ -78,7 +78,7 @@ LCGs are fast and have low memory overhead, which made them the standard choice 
 ## Value Noise
 Pure randomness — even non-uniform — has a fundamental limitation: it has no memory. Each value is independent of the last, so a sequence of random numbers produces jagged, incoherent results when used to drive continuous motion.
 Value noise addresses this by interpolating between random values sampled at fixed grid points. Instead of jumping erratically between independent values, the output transitions smoothly from one to the next.
-<img src={valueNoiseImg}/>
+<img src={valueNoiseImg}  width={"600px"}/>
 
 ```js
 class ValueNoise {
@@ -105,11 +105,11 @@ The interpolation can be improved by replacing the linear blend with a smoothste
 
 
 ```js
-smoothstep(x: number) {
+smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
 
-getValue(x: number) {
+getValue(x) {
     // Perform linear interpolation
     const floorHash = this.hash1D(Math.floor(x));
     const ceilHash = this.hash1D(Math.ceil(x));
@@ -165,7 +165,7 @@ class ValueNoise2D {
 Developed by Ken Perlin in the early 1980s for the film Tron, Perlin noise improves on value noise in an important way. Rather than assigning a random scalar to each grid point, it assigns a random gradient vector. The output at any point is computed from the dot products between those gradients and the direction vectors pointing from the grid corners to the query point, then blended together with smoothstep interpolation.
 
 This gradient-based approach produces smoother, more natural-looking results than value noise — particularly at large scales where value noise can exhibit a subtle blocky pattern.
-<img src={perlinNoiseImg}/>
+<img src={perlinNoiseImg} width={"600px"}/>
 ```js
 class PerlinNoise {   
     smoothstep(x) {
