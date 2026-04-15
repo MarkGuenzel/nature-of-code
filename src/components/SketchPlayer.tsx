@@ -4,9 +4,10 @@ import { Button } from "./ui/button";
 
 type P5SketchProps = {
   sketch: (p: p5) => void;
+  description?: string;
 }
 
-export default function SketchPlayer({ sketch }: P5SketchProps) {
+export default function SketchPlayer({ sketch, description }: P5SketchProps) {
   const containerRef = useRef(null);
   const p5InstanceRef = useRef<p5 | null>(null);
   const [running, setRunning] = useState(true);
@@ -40,6 +41,7 @@ export default function SketchPlayer({ sketch }: P5SketchProps) {
   return (
     <div>
       <div ref={containerRef} style={{ width: 700, height: 400 }}/>
+      <span>{description}</span>
       <div>
         <Button onClick={handleStartStop} > {running ? "Stop" : "Start"} </Button>
         <Button onClick={handleReload}> Reload </Button>

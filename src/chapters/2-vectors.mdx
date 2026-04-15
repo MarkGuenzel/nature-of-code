@@ -2,6 +2,7 @@ import SketchPlayer from '/src/components/SketchPlayer.tsx'
 
 import vectorOperationsImg from "./images/vector-operations.svg"
 import accelerationImg from "./images/position-velocity-acceleration.svg"
+import { sketchBall } from "./sketches/chapter-2/ball.ts"
 
 #  Chapter 2: Vectors
 
@@ -87,3 +88,90 @@ What makes this powerful is that acceleration can change over time. A constant a
 <img src={accelerationImg} />
 
 Each frame, the chain fires from left to right: acceleration feeds into velocity, velocity feeds into position. The object has no direct knowledge of the forces acting on it — it only ever knows its current velocity, which accumulates the effect of every force that has been applied. This separation is what makes the model so flexible: to change how an object moves, you only ever need to change what's feeding into acceleration.
+
+## Code Example
+All the concepts from this chapter — position, velocity, acceleration, normalization, and magnitude limiting — can be combined into a single, satisfying sketch: a ball that accelerates toward your mouse cursor.
+
+The `Ball` class stores three vector quantities. `position` is where the ball currently is, initialized to a random point on the canvas. `velocity` starts at zero — the ball is stationary. There is no stored acceleration vector, because acceleration is recalculated fresh every frame from the current mouse position.
+```js
+constructor() {
+    this.position = createVector(random(sketchWidth), random(sketchHeight));
+    this.velocity = createVector(0, 0);
+    this.accelerationSpeed = 0.2;
+    this.topSpeed = 8;
+}
+```
+
+The heart of the sketch is the `update` method. Each frame, it computes a vector pointing from the ball toward the mouse by subtracting the ball's position from the mouse position — exactly the subtraction operation covered earlier. That difference vector has whatever magnitude the distance happens to be, so `setMag()` normalizes it and rescales it to a fixed length. This decouples direction from distance: the ball accelerates at the same rate whether the mouse is one pixel away or five hundred.
+```js
+update() {
+    const mouse = p.createVector(p.mouseX, p.mouseY);
+
+    const acceleration = p5.Vector.sub(mouse, this.position); // direction toward mouse
+    acceleration.setMag(this.accelerationSpeed);              // normalize, then scale
+
+    this.velocity.add(acceleration);   // acceleration updates velocity
+    this.velocity.limit(this.topSpeed); // cap speed so it doesn't grow forever
+
+    this.position.add(this.velocity);  // velocity updates position
+
+    this.checkEdges();
+}
+```
+`velocity.limit()` is worth pausing on. Because acceleration is applied every frame, velocity would grow without bound if left unchecked — the ball would accelerate forever. Capping it at `topSpeed` gives the ball a terminal velocity, producing the characteristic feel of something with inertia that struggles to keep up with a fast-moving cursor rather than teleporting instantly to it.
+
+The full update chain runs every frame in this order: compute acceleration from the mouse, add it to velocity, clamp velocity, add velocity to position. This is the same three-layer model from the diagram at the end of the previous section — now expressed as running code.
+```js
+class Ball {
+    constructor() {
+        this.position = createVector(random(sketchWidth), random(sketchHeight));
+        this.velocity = createVector(0, 0);
+        this.accelerationSpeed = 0.2;
+        this.topSpeed = 8;
+    }
+    
+    update() {
+        const mouse = createVector(mouseX, mouseY);
+        
+        const acceleration = p5.Vector.sub(mouse, this.position)
+        acceleration.setMag(this.accelerationSpeed);
+        
+        this.velocity.add(acceleration);
+        this.velocity.limit(this.topSpeed)
+        
+        this.position.add(this.velocity);
+        
+        this.checkEdges();
+    }
+    
+    draw() {
+        stroke(0);
+        fill(127);
+        
+        circle(this.position.x, this.position.y, 48)
+    }
+    
+    checkEdges() {
+        if (this.position.x > sketchWidth) {
+            this.position.x = sketchWidth;
+            this.velocity.x *= -1;
+        } 
+        else if (this.position.x < 0) {
+            this.position.x = 0;
+            this.velocity.x *= -1;
+        }
+        if (this.position.y > sketchHeight) {
+            this.position.y = sketchHeight;
+            this.velocity.y *= -1;
+        } 
+        else if (this.position.y < 0) {
+            this.position.y = 0;
+            this.velocity.y *= -1;
+        }
+    }
+}
+```
+
+<SketchPlayer sketch={sketchBall} />
+
+What makes this sketch a good summary of the chapter is that none of the motion is hardcoded. The ball has no knowledge of where it will go next — it only knows its current velocity. The velocity has no knowledge of the mouse — it only knows the current acceleration. The behavior emerges entirely from vectors being added together, frame after frame. That composability is exactly why vectors are the right abstraction for physics simulation.

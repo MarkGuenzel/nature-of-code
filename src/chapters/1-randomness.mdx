@@ -1,6 +1,6 @@
 import SketchPlayer from '/src/components/SketchPlayer.tsx'
-import { sketchValueNoise, sketchValueNoiseSmooth, sketchValueNoise2D } from "./sketches/valueNoise.ts"
-import { sketchPerlinNoise } from "./sketches/perlinNoise.ts"
+import { sketchValueNoise, sketchValueNoiseSmooth, sketchValueNoise2D } from "./sketches/chapter-1/valueNoise.ts"
+import { sketchPerlinNoise } from "./sketches/chapter-1/perlinNoise.ts"
 
 import valueNoiseImg from "./images/value-noise.png"
 import perlinNoiseImg from "./images/perlin-noise.png"
@@ -78,7 +78,7 @@ LCGs are fast and have low memory overhead, which made them the standard choice 
 ## Value Noise
 Pure randomness — even non-uniform — has a fundamental limitation: it has no memory. Each value is independent of the last, so a sequence of random numbers produces jagged, incoherent results when used to drive continuous motion.
 Value noise addresses this by interpolating between random values sampled at fixed grid points. Instead of jumping erratically between independent values, the output transitions smoothly from one to the next.
-<img src={valueNoiseImg}  width={"600px"}/>
+<img src={valueNoiseImg} width={"600px"}/>
 
 ```js
 class ValueNoise {

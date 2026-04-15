@@ -1,0 +1,127 @@
+import SketchPlayer from '/src/components/SketchPlayer.tsx'
+import { sketchFriction } from "./sketches/chapter-3/friction.ts"
+
+import forceImg from "./images/force_accumulation.svg"
+import eulerVsTrue from "./images/euler-vs-true-path.svg"
+
+#  Chapter 3: Forces
+
+In the previous chapter, acceleration was set directly — the ball pointed toward the mouse and accelerated at a fixed rate. That worked, but it sidestepped a question that sits at the heart of physics simulation: _where does acceleration come from?_ The answer is forces.
+
+A **force** is a vector that causes an object to accelerate. That's it. Wind pushes. Gravity pulls. Friction resists. Each of these is a force — a vector quantity with a direction and a magnitude — and each one produces acceleration. The bridge between the two is Newton's second law, which we'll get to shortly.
+
+## Newton Laws of Motion
+
+Isaac Newton's laws of motion, published in 1687, remain the foundation of classical mechanics. For simulation purposes, all three are directly relevant.
+
+**The first law** states that an object at rest stays at rest, and an object in motion stays in motion at the same velocity, unless acted upon by a net external force. In code, this is already the default behavior: if you apply no acceleration, `velocity` never changes and the object drifts forever in a straight line. No special handling required — inertia is free.
+
+**The second law** is the most important for simulation. It states:
+$$
+\vec{F} = m \cdot \vec{a}
+$$
+Force equals mass times acceleration. Rearranging for acceleration, which is what we actually compute each frame:
+$$
+\vec{a} = \frac{\vec{F}}{m}
+$$
+This tells us that a given force produces less acceleration on a heavier object. A gust of wind barely nudges a boulder but sends a feather flying. Mass mediates the relationship between force and motion.
+
+**The third law** states that for every action there is an equal and opposite reaction. If object A exerts a force on object B, then B exerts an equal and opposite force on A. This becomes relevant when simulating collisions and constraint-based physics — two objects pushing against each other push back with equal force.
+
+## Mass and Weight
+These two terms are easy to conflate, but they mean different things and the distinction matters for simulation.
+
+**Mass** is a measure of how much matter an object contains. It is a scalar, measured in kilograms, and it does not change based on where the object is. A rock has the same mass on Earth as it does on the Moon.
+
+**Weight** is a force — specifically, the force that gravity exerts on an object. Because it is a force, it is a vector, and it depends on the local gravitational field. The same rock weighs less on the Moon because gravity is weaker there, even though its mass hasn't changed.
+
+In practice, this means that when you simulate gravity, you are applying a force that scales with mass. When you simulate other things — wind, for example — the force is independent of mass. A feather and a cannonball experience the same wind force, but because the cannonball has far greater mass, it accelerates far less.
+
+## Force Accumulation
+Real objects are rarely subject to just one force at a time. A falling leaf experiences gravity, air drag, and wind simultaneously. Newton's second law handles this cleanly: forces are vectors, and vectors add. The **net force** acting on an object is the sum of all individual forces applied to it, and the resulting acceleration is that net force divided by mass.
+
+The standard pattern for this in a simulation is to reset acceleration to zero at the start of each frame, then accumulate every force that applies:
+```js
+applyForce(force) {
+    const f = force.copy();
+    f.div(this.mass);           // a = F / m
+    this.acceleration.add(f);  // accumulate
+}
+
+update() {
+    this.velocity.add(this.acceleration);
+    this.velocity.limit(this.topSpeed);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0); // reset each frame
+}
+```
+Resetting acceleration each frame is important. Acceleration is not a persistent property of an object — it is the _instantaneous_ result of whatever forces are being applied right now. Velocity, by contrast, is persistent: it carries the history of all previous accelerations forward in time.
+
+<img src={forceImg}/>
+
+## Numerical Integration
+
+The update loop from the previous chapter — add acceleration to velocity, add velocity to position — is doing something more mathematically significant than it might appear. It is numerically approximating the solution to a differential equation.
+
+In continuous mathematics, position, velocity, and acceleration are related through calculus. Velocity is the derivative of position with respect to time — it describes how fast position is changing at any instant. Acceleration is the derivative of velocity — it describes how fast velocity is changing. Written formally:
+$$
+\vec{v}(t) = \frac{d \vec{x}}{dt} \qquad \vec{a}(t) = \frac{d \vec{v}}{dt}
+$$
+
+To go in the other direction — from acceleration back to position — you integrate. Given a known acceleration, you integrate once to recover velocity, and integrate again to recover position:
+$$
+\vec{v}(t) = \int \vec{a}(t) \: dt \qquad \vec{x}(t) = \int \vec{v}(t) \: dt
+$$
+In an ideal world you would solve these integrals analytically and get exact positions at any point in time. In practice, forces in a simulation change every frame — they depend on the current position of objects, the current velocity, user input, and so on — making an exact closed-form solution impossible. Instead, we approximate the integrals numerically, stepping forward in small increments of time.
+
+## Euler Integration
+The simplest numerical integration method is **Euler integration**, named after the 18th-century mathematician Leonhard Euler. The idea is to approximate the integral by assuming that velocity and acceleration are *constant* over each small timestep $ \Delta t $, then stepping forward:
+$$
+\vec{v}_{n+1} = \vec{v}_n + \vec{a}_n * \Delta t
+$$
+$$
+\vec{x}_{n+1} = \vec{x}_n + \vec{v}_n * \Delta t
+$$
+
+In a frame-based animation where $ \Delta t = 1 $ (one frame), this reduces to this code:
+```js
+this.velocity.add(this.acceleration); // v += a·Δt, with Δt = 1
+this.position.add(this.oldVelocity);     // x += v·Δt, with Δt = 1
+```
+
+This is intuitive and easy to implement, but it accumulates error over time. Because the method assumes acceleration and velocity are constant within each step, any curvature in the actual path gets ignored. The simulation gradually drifts from the true solution — a problem called **integration error**.
+<img src={eulerVsTrue} />
+
+At each timestep, Euler integration follows a straight-line tangent rather than the true curved path. The gap between the straight-line approximation and the true curve is the local error at that step. These errors accumulate, so the longer the simulation runs, the more the Euler path drifts from the analytical solution.
+
+## More Accurate Integrators
+
+For most game-like simulations, Euler integration is entirely adequate — the visual result looks convincing even if it isn't physically exact. But in scenarios where long-term accuracy matters, such as orbital mechanics or stiff physics systems, the drift becomes a problem. Several more accurate methods exist.
+
+**Symplectic Euler** (also called semi-implicit Euler) is a small but significant tweak: instead of updating position using the old velocity, you update it using the new velocity — after acceleration has already been applied:
+```js
+this.velocity.add(this.acceleration); // update velocity first
+this.position.add(this.velocity);     // then use the NEW velocity for position
+```
+
+This is actually what the code in this project already does — and it turns out to be meaningfully better than standard Euler for energy conservation. A standard Euler integrator tends to *add* energy to a system over time (orbits spiral outward); symplectic Euler keeps energy roughly bounded, so orbits stay stable.
+
+**Verlet integration** takes a different approach entirely. Rather than tracking velocity explicitly, it computes the next position from the current and previous positions:
+$$
+\vec{x}_{n+1} = 2 \vec{x}_n - \vec{x}_{n-1} + \vec{a}_n \cdot \Delta t^2
+$$
+Velocity is implicit — it is encoded in the difference between successive positions. Verlet integration has excellent energy conservation properties and is widely used in physics engines for cloth, rope, and rigid-body simulation. Its main disadvantage is that it needs two previous positions to bootstrap, and applying velocity-dependent forces (like drag) requires reconstructing velocity explicitly.
+
+**Runge-Kutta 4 (RK4)** is the gold standard for accuracy. Rather than sampling the derivative once at the start of each step, it samples four times at different points within the step and takes a weighted average. This dramatically reduces the per-step error, at the cost of four times the computation per frame. RK4 is the right choice for scientific simulations where precision matters, but is rarely necessary for interactive real-time work.
+
+For this project, symplectic Euler is the right choice. It costs nothing extra over standard Euler, conserves energy well enough for visual simulations, and is what the existing update loop already implements. The more sophisticated integrators are worth understanding — especially if this project eventually moves to C++, where a stiff physics solver might demand RK4 — but for now the simple approach is the correct one.
+
+## Modeling Friction
+
+Friction is a force that opposes motion. When an object slides along a surface, friction acts in the direction exactly opposite to its velocity, gradually slowing it down. The standard formula from physics is:
+$$
+\vec{F}_{friction} = - \mu N \^v
+$$
+where $ \mu $ (mu) is the **coefficient of friction** — a scalar that describes how grippy the surface is — and $ N $ is the **normal force**, which is the magnitude of the force pressing the object into the surface (often just the object's weight). $ \^v $ is the unit vector of velocity — the direction of motion — which gets negated to make friction point *against* movement.
+
+<SketchPlayer sketch={sketchFriction} description={"Click the mouse button to apply a wind force"} />

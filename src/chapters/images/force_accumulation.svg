@@ -1,0 +1,30 @@
+<svg width="100%" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  <mask id="imagine-text-gaps-brr49n" maskUnits="userSpaceOnUse"><rect x="0" y="0" width="680" height="200" fill="white"/><rect x="320.9046325683594" y="90.44444274902344" width="38.190738677978516" height="19.11111068725586" fill="black" rx="2"/><rect x="354" y="143.72222900390625" width="47.099998474121094" height="19.362961769104004" fill="black" rx="2"/><rect x="397.2583312988281" y="65.72222137451172" width="35.48333168029785" height="19.11111068725586" fill="black" rx="2"/><rect x="237.15138244628906" y="85.72222137451172" width="49.69721984863281" height="19.11111068725586" fill="black" rx="2"/><rect x="396" y="127.72222900390625" width="36.55370330810547" height="19.11111068725586" fill="black" rx="2"/><rect x="178.7893524169922" y="5.722222805023193" width="322.4212646484375" height="19.11111068725586" fill="black" rx="2"/></mask></defs>
+
+  <!-- Object -->
+  <circle cx="340" cy="100" r="28" fill="var(--color-background-secondary)" stroke="var(--color-border-primary)" stroke-width="1.5" style="fill:rgb(38, 38, 36);stroke:rgba(222, 220, 209, 0.4);color:rgb(251, 251, 254);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="340" y="100" text-anchor="middle" dominant-baseline="central" style="fill:rgb(194, 192, 182);stroke:none;color:rgb(251, 251, 254);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central">m = 2</text>
+
+  <!-- Gravity (down) -->
+  <line x1="340" y1="128" x2="340" y2="172" stroke="#E24B4A" stroke-width="2.5" marker-end="url(#arrow)" fill="none" style="fill:none;stroke:rgb(226, 75, 74);color:rgb(251, 251, 254);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="358" y="158" fill="#E24B4A" style="fill:rgb(194, 192, 182);stroke:none;color:rgb(251, 251, 254);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">gravity</text>
+
+  <!-- Wind (right) -->
+  <line x1="368" y1="90" x2="450" y2="90" stroke="#3B8BD4" stroke-width="2.5" marker-end="url(#arrow)" fill="none" style="fill:none;stroke:rgb(59, 139, 212);color:rgb(251, 251, 254);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="415" y="80" fill="#3B8BD4" text-anchor="middle" style="fill:rgb(194, 192, 182);stroke:none;color:rgb(251, 251, 254);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:auto">wind</text>
+
+  <!-- Friction (left) -->
+  <line x1="312" y1="110" x2="220" y2="110" stroke="#1D9E75" stroke-width="2.5" marker-end="url(#arrow)" fill="none" style="fill:none;stroke:rgb(29, 158, 117);color:rgb(251, 251, 254);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="262" y="100" fill="#1D9E75" text-anchor="middle" style="fill:rgb(194, 192, 182);stroke:none;color:rgb(251, 251, 254);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:auto">friction</text>
+
+  <!-- Net force arrow (diagonal) -->
+  <line x1="340" y1="100" x2="410" y2="158" stroke="#BA7517" stroke-width="2.5" stroke-dasharray="6 3" marker-end="url(#arrow)" fill="none" mask="url(#imagine-text-gaps-brr49n)" style="fill:none;stroke:rgb(186, 117, 23);color:rgb(251, 251, 254);stroke-width:2.5px;stroke-dasharray:6px, 3px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="400" y="142" fill="#BA7517" style="fill:rgb(194, 192, 182);stroke:none;color:rgb(251, 251, 254);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">F net</text>
+
+  <!-- Label: a = F/m -->
+  <text x="340" y="20" text-anchor="middle" style="fill:rgb(194, 192, 182);stroke:none;color:rgb(251, 251, 254);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:auto">All forces accumulate each frame → net force → a = F / m</text>
+</svg>

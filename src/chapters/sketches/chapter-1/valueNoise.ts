@@ -1,5 +1,5 @@
 import p5 from "p5";
-import { sketchWidth, sketchHeight } from "./sktechSize";
+import { sketchWidth, sketchHeight } from "../sketchSize";
 
 class ValueNoise {
     hash1D(x: number) {
