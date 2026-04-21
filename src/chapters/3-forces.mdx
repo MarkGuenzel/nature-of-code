@@ -1,5 +1,6 @@
 import SketchPlayer from '/src/components/SketchPlayer.tsx'
 import { sketchFriction } from "./sketches/chapter-3/friction.ts"
+import { sketchDrag } from "./sketches/chapter-3/drag.ts"
 
 import forceImg from "./images/force_accumulation.svg"
 import eulerVsTrue from "./images/euler-vs-true-path.svg"
@@ -122,6 +123,50 @@ Friction is a force that opposes motion. When an object slides along a surface, 
 $$
 \vec{F}_{friction} = - \mu N \^v
 $$
-where $ \mu $ (mu) is the **coefficient of friction** — a scalar that describes how grippy the surface is — and $ N $ is the **normal force**, which is the magnitude of the force pressing the object into the surface (often just the object's weight). $ \^v $ is the unit vector of velocity — the direction of motion — which gets negated to make friction point *against* movement.
+where: $ \mu $ (mu) is the **coefficient of friction** — a scalar that describes how grippy the surface is — and $ N $ is the **normal force**, which is the magnitude of the force pressing the object into the surface (often just the object's weight). $ \^v $ is the unit vector of velocity — the direction of motion — which gets negated to make friction point *against* movement.
+
+```js
+applyFriction() {
+    const friction = this.velocity.copy().normalize();
+    const N = this.mass;
+    const mu = 0.1;
+
+    friction.mult(-1);
+    friction.setMag(mu * N);
+    this.applyForce(friction);
+}
+```
 
 <SketchPlayer sketch={sketchFriction} description={"Click the mouse button to apply a wind force"} />
+
+## Modeling Drag
+
+Drag is friction's airborne cousin: a resistive force that acts on objects moving through a fluid, whether that fluid is water or air. Unlike surface friction, drag grows stronger as the object moves faster. The physical formula is:
+$$
+\vec{F}_{drag} = - \frac{1}{2} p v^2 A C_d \^v
+$$
+where:
+- $ p $ (rho) is the density of the liquid or gas
+- $ v $ is the speed of the moving object
+- $ A $ is the frontal surface area of the object that’s pushing through the liquid or gas
+- $ C_d $ is the coefficient of drag
+- $ \^v $ is the velocity unit vector
+
+For simulation purposes, the constants $ p $, $ A $ and $ C_d $ are usually collapsed into a single coefficient $ c $, giving a simplified model:
+$$
+\vec{F}_{drag} = -c {v}^2 \^v
+$$
+
+The key insight is the squared speed term: an object moving twice as fast experiences four times the drag. This is what gives falling objects a terminal velocity — drag increases until it exactly balances gravity, at which point net force is zero and acceleration stops.
+```js
+applyDrag(dragCoefficient: number) {
+    const drag = this.velocity.copy().normalize();
+    const speed = this.velocity.copy().mag()
+    const v2 = speed * speed;
+
+    drag.setMag(dragCoefficient * v2 * -1);
+    this.applyForce(drag);
+}
+```
+
+<SketchPlayer sketch={sketchDrag} />

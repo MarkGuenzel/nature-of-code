@@ -1,7 +1,41 @@
 import p5 from "p5";
 import { sketchWidth, sketchHeight } from "../sketchSize";
 
-export const sketchFriction = (p: p5) => {
+export const sketchDrag = (p: p5) => {
+    class Liquid {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        dragCoefficient: number;
+
+        constructor(
+            x: number, 
+            y: number, 
+            width: number, 
+            height: number, 
+            dragCoefficient: number
+        ) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.dragCoefficient = dragCoefficient;
+        }
+
+        constains(ball: Ball) {
+            const pos = ball.position;
+            
+            return (pos.x > this.x && pos.x < this.x + this.width && 
+                    pos.y > this.y && pos.y < this.y + this.height);
+        }
+
+        draw() {
+            p.noStroke();
+            p.fill(175);
+            p.rect(this.x, this.y, this.width, this.height);
+        }
+    }
     class Ball {
         position: p5.Vector;
         velocity: p5.Vector;
@@ -30,6 +64,15 @@ export const sketchFriction = (p: p5) => {
             friction.mult(-1);
             friction.setMag(mu * N);
             this.applyForce(friction);
+        }
+
+        applyDrag(dragCoefficient: number) {
+            const drag = this.velocity.copy().normalize();
+            const speed = this.velocity.copy().mag()
+            const v2 = speed * speed;
+
+            drag.setMag(dragCoefficient * v2 * -1);
+            this.applyForce(drag);
         }
         
         update() {
@@ -76,14 +119,14 @@ export const sketchFriction = (p: p5) => {
     }
 
     const balls: Ball[] = [];
-    let gravity: p5.Vector;
+    let liquid: Liquid;
     let wind: p5.Vector;
 
     p.setup = () => {
         p.createCanvas(sketchWidth, sketchHeight);
 
-        gravity = p.createVector(0, 1);  //{!1} Should scale by mass to be more accurate
         wind = p.createVector(0.5, 0);
+        liquid = new Liquid(0, sketchHeight / 2, sketchWidth, sketchHeight, 0.2);
 
         balls.push(new Ball(150, 30, 2));
         balls.push(new Ball(300, 30, 4));
@@ -91,9 +134,15 @@ export const sketchFriction = (p: p5) => {
 
     p.draw = () => {
         p.background(255);
+        liquid.draw();
 
         for(const ball of balls) {
+            const gravity = p.createVector(0, 0.1 * ball.mass)
             ball.applyForce(gravity);
+
+            if(liquid.constains(ball)) {
+                ball.applyDrag(liquid.dragCoefficient);
+            }
 
             if(p.mouseIsPressed) {
                 ball.applyForce(wind);
