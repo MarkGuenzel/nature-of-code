@@ -1,6 +1,7 @@
 import SketchPlayer from '/src/components/SketchPlayer.tsx'
 import { sketchFriction } from "./sketches/chapter-3/friction.ts"
 import { sketchDrag } from "./sketches/chapter-3/drag.ts"
+import { sketchGravity } from "./sketches/chapter-3/gravity.ts"
 
 import forceImg from "./images/force_accumulation.svg"
 import eulerVsTrue from "./images/euler-vs-true-path.svg"
@@ -123,7 +124,12 @@ Friction is a force that opposes motion. When an object slides along a surface, 
 $$
 \vec{F}_{friction} = - \mu N \^v
 $$
-where: $ \mu $ (mu) is the **coefficient of friction** — a scalar that describes how grippy the surface is — and $ N $ is the **normal force**, which is the magnitude of the force pressing the object into the surface (often just the object's weight). $ \^v $ is the unit vector of velocity — the direction of motion — which gets negated to make friction point *against* movement.
+where: 
+- $ \mu $ (mu) is the **coefficient of friction** — a scalar that describes how grippy the surface is 
+- $ N $ is the **normal force**, which is the magnitude of the force pressing the object into the surface (often just the object's weight)
+- $ \^v $ is the unit vector of velocity — the direction of motion — which gets negated to make friction point *against* movement.
+
+Multiplied together, these give a force that always opposes motion and scales with how hard the object is being pressed into the surface.
 
 ```js
 applyFriction() {
@@ -141,7 +147,9 @@ applyFriction() {
 
 ## Modeling Drag
 
-Drag is friction's airborne cousin: a resistive force that acts on objects moving through a fluid, whether that fluid is water or air. Unlike surface friction, drag grows stronger as the object moves faster. The physical formula is:
+Where friction acts between two solid surfaces, drag is the resistive force experienced by an object moving through a fluid — whether that fluid is water, air, or anything in between. The key difference from friction is that drag is not constant: it grows with speed. Move faster, and the fluid pushes back harder.
+
+The full physical formula is:
 $$
 \vec{F}_{drag} = - \frac{1}{2} p v^2 A C_d \^v
 $$
@@ -152,12 +160,12 @@ where:
 - $ C_d $ is the coefficient of drag
 - $ \^v $ is the velocity unit vector
 
-For simulation purposes, the constants $ p $, $ A $ and $ C_d $ are usually collapsed into a single coefficient $ c $, giving a simplified model:
+For simulation purposes, the constants $ p $, $ A $ and $ C_d $ are all constants that depend on the specific scenario. They collapse into a single tunable coefficient $ c $, leaving a simplified model that is much easier to work with:
 $$
 \vec{F}_{drag} = -c {v}^2 \^v
 $$
 
-The key insight is the squared speed term: an object moving twice as fast experiences four times the drag. This is what gives falling objects a terminal velocity — drag increases until it exactly balances gravity, at which point net force is zero and acceleration stops.
+The squared speed term is the crucial insight. An object moving twice as fast experiences _four times_ the drag. This is precisely what produces **terminal velocity**: as a falling object accelerates under gravity, drag grows until it exactly cancels the gravitational force. Net force reaches zero, acceleration stops, and the object falls at a constant speed from that point on.
 ```js
 applyDrag(dragCoefficient: number) {
     const drag = this.velocity.copy().normalize();
@@ -170,3 +178,32 @@ applyDrag(dragCoefficient: number) {
 ```
 
 <SketchPlayer sketch={sketchDrag} />
+
+## Modeling Gravity
+So far, gravity has appeared as a simple constant downward force — a convenient approximation for objects near the ground. But gravity is actually a mutual attraction between any two objects with mass. Newton's law of universal gravitation captures this precisely:
+$$
+F_g = \frac{G * m_1 * m_2}{r^2} * \^r
+$$
+where:
+- $ G $ is the universal gravitational constant, which in our world equals $ 6.67428  * 10^{-11} $
+- $ m_1 $ and $ m_2 $ are the masses of objects 1 and 2
+- $ r^2 $ is the distance between the two objects squared
+- $ \^r $ refers to the unit vector pointing from object 1 to object 2
+
+Three things are worth observing. First, the force scales with the product of both masses — a more massive attractor pulls harder, and a more massive object is pulled harder. Second, the force falls off with the square of distance, meaning it weakens rapidly as objects move apart. Third, by Newton's third law, both objects experience the force equally and oppositely — the Earth pulls you down with exactly the same force you pull the Earth up.
+In simulation, this becomes interesting when multiple bodies attract each other — planets orbiting a star, or particles clustering under mutual gravitational pull. The implementation computes a direction vector from the attracted body toward the attractor, then scales its magnitude according to the formula:
+```js
+attract(ball: Ball) {
+    const force = p5.Vector.sub(this.position, ball.position);
+    
+    const distanceSquared = constrain(force.magSq(), 500, 1000);
+    const G = 5;
+    const strength = G * (this.mass * ball.mass) / distanceSquared;
+    
+    force.setMag(strength);
+    ball.applyForce(force);
+}
+```
+The `constrain` on the squared distance deserves attention. As two bodies approach each other, $ r^2 $ shrinks toward zero and the formula sends the force toward infinity — the attracted body accelerates violently and shoots off screen. Clamping the minimum distance prevents this singularity and keeps the simulation stable, at the cost of slightly unrealistic behavior at very close range. It is a deliberate trade-off, not an oversight.
+
+<SketchPlayer sketch={sketchGravity} />
